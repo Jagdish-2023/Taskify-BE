@@ -25,6 +25,24 @@ const setCookiesToken = (res, token, user, operation) => {
   });
 };
 
+router.post("/guest/signin", async (req, res) => {
+  try {
+    const findUser = await User.findOne({
+      email: process.env.GUEST_EMAIL,
+      password: process.env.GUEST_PASSWORD,
+    });
+
+    const token = jwt.sign({ userId: findUser._id, role: "user" }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return setCookiesToken(res, token, findUser, "signin");
+  } catch (error) {
+    console.error("Login failed: ", error);
+    res.status(500).json({ error: "Failed to logged in guest user" });
+  }
+});
+
 router.post("/v1/signup", async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
@@ -97,7 +115,7 @@ router.get("/check", (req, res) => {
     res.status(200).json({ isLoggedIn: true });
   } catch (error) {
     console.error(error);
-    res.status(500).json("Failed to check Login status");
+    res.status(500).json({ error: "Failed to check Login status" });
   }
 });
 
@@ -112,7 +130,7 @@ router.post("/logout", (req, res) => {
     return res.status(200).json({ message: "Logout successfully" });
   } catch (error) {
     console.error("Failed to Logout: ", error);
-    res.status(500).json("Failed to Logout");
+    res.status(500).json({ error: "Failed to Logout" });
   }
 });
 

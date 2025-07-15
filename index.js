@@ -38,7 +38,7 @@ app.get("/v1/user", verifyJWT, async (req, res) => {
 
 app.get("/v1/todos", verifyJWT, async (req, res) => {
   try {
-    const todos = await Todo.find();
+    const todos = await Todo.find({ owner: req.user.userId });
 
     return res.status(200).json(todos);
   } catch (error) {
